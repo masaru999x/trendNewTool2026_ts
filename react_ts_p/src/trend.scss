@@ -1,0 +1,557 @@
+* {
+  margin:0;
+  padding:0;
+}
+
+body {
+  background-color: #FFF;
+  padding: 12px 20px;
+  color: #333;
+  line-height: 160%;
+font-family: sans-serif;
+}
+
+
+
+.mainTitle {
+  margin-bottom: 12px;
+  font-size: 20px;
+}
+
+.serverTime {
+  margin-bottom: 20px;
+}
+
+.muteButton {
+  padding: 0 6px;
+  margin-bottom: 8px;
+  font-size: 10px;
+}
+
+.muteStatus {
+  display: inline-block;
+  padding: 0 16px;
+  font-size: 10px;
+}
+
+.above-mode {
+  display:none;
+  width:60px;
+  height:60px;
+  background-color:#F00;
+}
+.muteTmp {
+  display:inline-block;
+  padding:2px 6px;
+  margin-bottom:12px;
+  background-color:#888;
+  border:1px solid #333;
+  border-radius: 4px;
+  color:#FFF;
+  font-size:10px;
+  cursor:pointer;
+}
+
+.mute_disable {
+  display:block;
+  width:100vw;
+  height:100vh;
+  background-color:rgba(0,0,0,0.4);
+  position:fixed;
+  left:0;
+  top:0;
+}
+.md_inner {
+  width: 40%;
+  margin: 20% auto 0;
+  padding: 50px;
+  background-color: #FFF;
+  border: 1px solid #666;
+  border-radius: 8px;
+  text-align: center;
+  line-height: 2;
+}
+.trend-list {
+  padding-left: 6px;
+  border-left: 8px solid #CCC;
+}
+
+.trend-list p{
+
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+
+.trend-list p .cautionTxt {
+  display:inline-block;
+  font-size: 8px;
+  line-height:8px;
+}
+
+.w_title {
+  margin:0 0 12px;
+  padding:0;
+  font-size:20px;
+  font-weight:bold;
+  color: #F00;
+}
+
+.warning {
+  padding: 0 0 0 30px;
+  margin: 0;
+  font-size:20px;
+  font-weight:bold;
+  color: #F00;
+  list-style-type:  disc;
+}
+
+.f_min {
+  font-size: 80%;
+}
+.strong {
+  font-size: 100%;
+}
+
+p {
+  margin-bottom: 0;
+}
+
+div.sigNow {
+  width:480px;
+  background-color: #AAA;
+  border: 1px solid #AAA;
+  text-align: right;
+  padding: 0;
+  margin: 0 0 4px;
+  line-height: 0;
+}
+
+div.sigNow b{
+  display: inline-block;
+  width: 2px;
+  height: 4px;
+  margin: 0;
+  padding: 0;
+  background-color: #F33;
+  line-height: 0;
+  vertical-align: top;
+  position: relative;
+}
+
+div.sigNow b.o1:before{
+    content: "";
+    display: block;
+    width: 2px;
+    height: 3px;
+    border-radius: 2px;
+    position: absolute;
+    top: 5px;
+    right: 0;
+    background-color: #F00;
+}
+/*
+div.sigNow b.o2:after{
+    content: "";
+    display: block;
+    width: 2px;
+    height: 1px;
+    border-radius: 2px;
+    position: absolute;
+    top: 9px;
+    right: 0;
+    background-color: #F00;
+}
+
+div.sigNow b.o1.o2.o3:before,
+div.sigNow b.o1.o2.o3:after{
+    background-color: #F00;
+    height: 3px;
+}
+*/
+
+div.sigNow p{
+  display: inline-block;
+  width: 2px;
+  height: 4px;
+  margin: 0;
+  padding: 0;
+  background-color: #33F;
+  line-height: 0;
+  vertical-align: top;
+  position: relative;
+}
+
+div.sigNow p.o1:before{
+    content: "";
+    display: block;
+    width: 2px;
+    height: 1px;
+    border-radius: 2px;
+    position: absolute;
+    top: 6px;
+    right: 0;
+    background-color: #33F;
+}
+
+div.sigNow p.o2:after{
+    content: "";
+    display: block;
+    width: 2px;
+    height: 1px;
+    border-radius: 2px;
+    position: absolute;
+    top: 9px;
+    right: 0;
+    background-color: #33F;
+}
+
+div.sigNow p.o1.o2.o3:before,
+div.sigNow p.o1.o2.o3:after{
+    background-color: #33F;
+    height: 3px;
+}
+
+div.sigNow i{
+  display: inline-block;
+  width: 2px;
+  height: 4px;
+  margin: 0;
+  padding: 0;
+  background-color: #FFF;
+  line-height: 0;
+  vertical-align: top;
+}
+
+div.zoomDirection {
+  width:480px;
+  background-color: #FFF;
+  border: 1px solid #AAA;
+  text-align: right;
+  padding: 0;
+  margin: 0 0 2px;
+  line-height: 0;
+}
+/*
+@media screen and (-webkit-min-device-pixel-ratio: 0) and (min-resolution: .001dpcm) {
+    div.zoomDirection {
+      margin: 0 0 0px;
+    }
+}
+@-moz-document url-prefix() {
+  div.zoomDirection {
+    margin: 0 0 0px;
+  }
+}
+*/
+
+div.zoomDirection i{
+  display: inline-block;
+  width: 2px;
+  height: 4px;
+  margin: 0;
+  padding: 0;
+  background-color: #FFF;
+  line-height: 0;
+  vertical-align: top;
+}
+
+div.zoomDirection p{
+  display: inline-block;
+  width: 34px;
+  height: auto;
+  margin: 0;
+  padding: 0 6px;
+  background-color: #FFF;
+  line-height: 1;
+  vertical-align: middle;
+  font-size: 10px;
+}
+
+div.zoomDirection b{
+  display: inline-block;
+  width: 2px;
+  height: 4px;
+  margin: 0;
+  padding: 0;
+  background-color: #88F;
+  line-height: 0;
+  vertical-align: top;
+}
+
+button.dayListButton {
+  padding: 0 4px;
+  font-size:10px;
+}
+
+
+div.timeGage {
+  display: flex;
+  flex-direction: row-reverse;
+  height: 4px;
+  width: 480px;
+  text-align: right;
+}
+
+div.timeGage i{
+  display: block;
+  width: 7px;
+  height: 2px;
+  margin: 2px 0 0;
+  padding: 0;
+  background-color: #FFF;
+  line-height: 0;
+  vertical-align: top;
+  border-left: 1px solid #aaa;
+}
+
+div.timeGage i:nth-child(5),
+div.timeGage i:nth-child(10),
+
+div.timeGage i:nth-child(20),
+div.timeGage i:nth-child(25),
+
+div.timeGage i:nth-child(35),
+div.timeGage i:nth-child(40),
+
+div.timeGage i:nth-child(50),
+div.timeGage i:nth-child(55),
+
+div.timeGage i:nth-child(65),
+div.timeGage i:nth-child(70){
+  width: 6px !important;
+  margin: 2px 0 0;
+  border-left: 2px solid #555 !important;
+}
+
+div.timeGage i:nth-child(15),
+div.timeGage i:nth-child(30),
+div.timeGage i:nth-child(45),
+div.timeGage i:nth-child(60){
+  width: 6px !important;
+  height: 4px !important;
+  margin: 0 !important;
+  border-left: 2px solid #F00 !important;
+}
+
+.currencyBlock {
+  display: flex;
+  margin-bottom: 12px;
+  line-height: 1;
+}
+
+.checkItem {
+  margin: 0 12px 0 0;
+
+  button{
+    display: block;
+    width:16px;
+    padding: 0;
+    font-size: 8px;
+    float: left;
+  }
+
+  button.restart{
+    width:32px;
+    clear: both;
+  }
+  div.time {
+    font-size:10px;
+    width:32px;
+    margin-bottom:6px;
+    text-align:right;
+  }
+
+  span {
+    display: block;
+    width: 20px;
+    height: 20px;
+    margin-bottom: 27.9px;
+  }
+
+}
+
+
+.time-list {
+  margin-bottom: 12px;
+}
+
+.signalAnim {
+  display: block;
+  width:32px;
+  height:14.95px;
+  margin-bottom: 2px;
+  background-color:#DDD;
+}
+
+.signalAnim div{
+  width:0;
+  height:14.95px;
+  background-color:#F00;
+}
+
+.currencyOpacity {
+  border-left: 2px solid #AAA;
+  background-color: #AAA;
+}
+
+.signalAnim.current div{
+
+  animation-name: bgAnime;/*アニメーションの定義名*/
+  animation-duration:30s;/*アニメーション変化時間 ※デフォルト*/
+  animation-fill-mode:forwards;/*アニメーションの開始と終了時の状態を指定*/
+}
+
+@keyframes bgAnime{
+  from {
+    width: 32px;
+  }
+
+  to {
+    width: 0;
+  }
+}
+
+
+.debugs{
+  position: absolute;
+  right:0;
+  top:0;
+}
+
+
+/////////////////////////////////////////////////////////
+
+.toolsFlex {
+  display: flex;
+}
+
+.wrapper {
+  padding: 0 20px 16px;
+}
+h1 {
+  font-size:20px;
+  line-height: 100%;
+}
+
+h2 {
+  font-size:16px;
+  line-height: 100%;
+}
+
+h3 {
+  &.h3Title {
+    font-size:14px;
+    line-height: 100%;
+    margin-bottom: 12px;
+  }
+}
+
+#pickupSpan {
+  font-size:14px;
+}
+
+.c3 svg .c3-legend-item.c3-legend-item-bolinger {
+  display:none!important;
+}
+.c3-axis-x .tick text {
+  text-anchor: middle;
+}
+
+.c3 svg .c3-axis-x .tick {
+  display: none!important;
+}
+
+.shortChartBox {
+  width: 300px;
+}
+
+.dayChartBox {
+  max-width: 1000px;
+}
+
+.dateCopied span{
+  animation-name: fadeIn;
+  animation-duration:1s;
+  animation-fill-mode:forwards;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+#trendChart {
+  height:300px;
+}
+
+.chartSettings {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.dayChartSetting {
+  line-height: 2.2;
+}
+
+.shortChartSetting {
+  margin: 0 0 0 20px;
+  line-height: 2.2;
+}
+
+#outputJSON {
+  display: none;
+}
+
+#subtractTime,#addTime {
+  width: 20px;
+}
+
+#dayTrendChart span.emptyMessage,
+#trendChart span.emptyMessage {
+  display:flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #EEE;
+  height:300px;
+  width:600px;
+  font-size:14px;
+  margin-bottom:20px;
+}
+
+#readAction span,
+#readAction2 span{
+    display: inline-block;
+    width: 14px;
+    height: 2px;
+    background-color: #666;
+    margin-left: 6px;
+    vertical-align: middle;
+    animation-name: rotateAnime;/*アニメーションの定義名*/
+    animation-duration:.5s;/*アニメーション変化時間 ※デフォルト*/
+    animation-fill-mode:forwards;/*アニメーションの開始と終了時の状態を指定*/
+    animation-timing-function: linear;
+}
+
+
+@keyframes rotateAnime{
+  0% {
+    transform: rotate(0);
+    opacity:1;
+  }
+
+  90% {
+    opacity:1;
+  }
+
+  100% {
+    transform: rotate(400deg);
+    opacity:0;
+  }
+}
