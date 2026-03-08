@@ -216,7 +216,7 @@ export default function App() {
         }
       }
     }
-  }, [data, items, keepSound]);
+  }, [data]);
 
   useEffect(() => {
     const decCount = () => {
@@ -261,7 +261,7 @@ export default function App() {
     }
 
     return () => clearInterval(soundId);
-  }, [data, items, keepSound]);
+  }, [data]);
 
   return (
     <div style={{ padding: 0 }}>
