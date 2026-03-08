@@ -1,5 +1,27 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import TrendPickup from "./trend_pickup";
+
+type CurrencyItem = {
+  pair: string;
+  trend: number;
+  touchLow: number;
+  aveDiff: string;
+  aoCaution: number;
+  limitDiff05: number;
+  limitDiff01: number;
+  deg05: number;
+  bolin05: number;
+  bolin15: number;
+  aoStatus: string;
+  externalAlert: number;
+};
+
+type TrendData = {
+  trendsound: string;
+  pickup_world: string;
+  pickup_local: string;
+  currency: string[][];
+};
 
 export default function App() {
   const rootRef = useRef(null);
@@ -102,7 +124,36 @@ export default function App() {
     }, 15000); // 15000ms = 15秒
 
     return () => clearInterval(interval); // ← 超重要（クリーンアップ）
-  }, []);
+  }, [defaultApiPath]);
+
+  const items: CurrencyItem[] = useMemo(() => {
+    return (
+      data?.currency?.map((row) => ({
+        pair: row[0] ?? "",
+        trend: Number(row[1] ?? 0),
+        touchLow: Number(row[2] ?? 0),
+        aveDiff: row[3] ?? "",
+        aoCaution: Number(row[4] ?? 0),
+        limitDiff05: Number(row[5] ?? 0),
+        limitDiff01: Number(row[6] ?? 0),
+        deg05: Number(row[7] ?? 0),
+        bolin05: Number(row[8] ?? 0),
+        bolin15: Number(row[9] ?? 0),
+        aoStatus: row[10] ?? "",
+        externalAlert: Number(row[11] ?? 0),
+      })) ?? []
+    );
+  }, [data]);
+
+  // 配列を取り出す（APIの形が違っても対応）
+  /*
+  const items =
+  Array.isArray(data) ? data :
+  Array.isArray(data?.data) ? data.data :
+  Array.isArray(data?.currency) ? data.currency :
+  [];
+*/
+
 
 ///////////////////////////////////////////////////////////
 
@@ -212,12 +263,6 @@ const didRun = useRef(false);
 
 /////////////////////////////////////////////////
 
-  // 配列を取り出す（APIの形が違っても対応）
-  const items =
-  Array.isArray(data) ? data :
-  Array.isArray(data?.data) ? data.data :
-  Array.isArray(data?.currency) ? data.currency :
-  [];
 
 
   return (
@@ -239,35 +284,6 @@ const didRun = useRef(false);
       <p className="serverTime">W:読み込み中...</p>
     )}
 
-{/*}
-    {error && <p style={{ whiteSpace: "pre-wrap" }}>{error}</p>}
-
-
-    <p>muteFlag{muteFlag}</p>
-
-    {items?.[0] ? (
-      <div className="debugs">
-      <span>0: {items[0][0]}&nbsp;&nbsp;&nbsp;&nbsp;:symbolName：通貨ぺや</span><br />
-      <span>1: {items[0][1]}&nbsp;&nbsp;&nbsp;&nbsp;: currency_mode：トレンド状態</span><br />
-      <span>2: {items[0][2]}&nbsp;&nbsp;&nbsp;&nbsp;: touchLow: トレンド時の下げ限度到達</span><br />
-      <span>3: {items[0][3]}&nbsp;&nbsp;&nbsp;&nbsp;: aveDiff: 1：5：15の、乖離</span><br />
-      <span>4: {items[0][4]}&nbsp;&nbsp;&nbsp;&nbsp;: aoCaution：オサムの行き過ぎ検知15（今使ってない）</span><br />
-      <span>5: {items[0][6]}&nbsp;&nbsp;&nbsp;&nbsp;: limitDiff01：1分の行き過ぎ検知</span><br />
-      <span>6: {items[0][5]}&nbsp;&nbsp;&nbsp;&nbsp;: limitDiff05：5分の行き過ぎ検知</span><br />
-      <span>7: {items[0][7]}&nbsp;&nbsp;&nbsp;&nbsp;: NormalizeDouble(mid_05_30_Deg_now, 1)：5分角度（ほぼ見てない）</span><br />
-      <span>8: {items[0][8]}&nbsp;&nbsp;&nbsp;&nbsp;: degBolin05_20：ボリンジャー5分の偏差20</span><br />
-      <span>9: {items[0][9]}&nbsp;&nbsp;&nbsp;&nbsp;: degBolin15_20：ボリンジャー15分の偏差20</span><br />
-      <span>10: {items[0][10]}&nbsp;&nbsp;&nbsp;&nbsp;: upperAOstatus: 30h以上AO進行方向</span><br />
-      <span>11: {items[0][11]}&nbsp;&nbsp;&nbsp;&nbsp;: externalAlertFlag： 外部アラート</span><br />
-      <span>12: {items[0][12]}&nbsp;&nbsp;&nbsp;&nbsp;: empty</span>
-      </div>
-    ) : (
-      <p>読み込み中...</p>
-    )}
-
-    <pre>{JSON.stringify(muteList, null, 2)}</pre>
-
-*/}
 
 
 <div className="toolsFlex">
@@ -276,16 +292,16 @@ const didRun = useRef(false);
     {
       <div>
       {items.map((item, i) => {
-        const aoStatusBase = item[10] ?? "";
+        const aoStatusBase = item.aoStatus ?? "";
         let aoStatus = aoStatusBase.replaceAll('1', '＋');
         aoStatus = aoStatus.replaceAll('0', '－');
         aoStatus = aoStatus.replaceAll('p', '▲');
         aoStatus = aoStatus.replaceAll('m', '▽');
 
         let directionColor = "";
-        if (parseInt(item[1]) >= 1) {
+        if (parseInt(item.trend) >= 1) {
           directionColor = "#F00";
-        } else if (parseInt(item[1]) <= -1) {
+        } else if (item.trend <= -1) {
            directionColor = "#00F";
         } else {
            directionColor = "#AAA";
@@ -297,7 +313,7 @@ const didRun = useRef(false);
 
 
           <div className="signalAnim current">
-          {(parseInt(item[1]) > 2 || parseInt(item[1]) < -2) && (<div></div>)}
+          {(item.trend > 2 || item.trend < -2) && (<div></div>)}
           </div>
 
           <button className="mute 0" aria-label="ミュート時間60分追加"
@@ -334,14 +350,14 @@ const didRun = useRef(false);
           </div>
 
           <div>
-          <p className="statusBox" style={{ whiteSpace: "nowrap", color: directionColor, backgroundColor: (muteList[i] <= 0) ? "#FFF" : "#DDD", fontWeight: (parseInt(item[1]) > 1 || parseInt(item[1]) < -1) ? "bold" : "normal" }}>
-          {(parseInt(item[1]) > 2 || parseInt(item[1]) < -2) && ( <span>&lt;&lt;</span> )} {(parseInt(item[1]) < -3) && ( <span>↑</span> )}
-          {item[0]} {aoStatus}
+          <p className="statusBox" style={{ whiteSpace: "nowrap", color: directionColor, backgroundColor: (muteList[i] <= 0) ? "#FFF" : "#DDD", fontWeight: item.trend > 1 || item.trend < -1 ? "bold" : "normal" }}>
+          {item.trend > 2 || item.trend < -2 &&  <span>&lt;&lt;</span> } {item.trend < -3 &&  <span>↑</span> }
+          {item.pair} {aoStatus}
           <span className="f_min">&nbsp;&nbsp;3Deg: </span>
-          <span>{item[3]}</span>&nbsp;&nbsp;<span>
-          <span className="f_min">05Dif:</span> {item[6]}</span>&nbsp;<span>
-          <span className="f_min">01Dif:</span> {item[5]}</span>&nbsp;B:{item[8]}_{item[9]}
-          {(parseInt(item[1]) > 2 || parseInt(item[1]) < -2) && ( <span>&gt;&gt;</span> )}
+          <span>{item.aveDiff}</span>&nbsp;&nbsp;<span>
+          <span className="f_min">05Dif:</span> {item.limitDiff05}</span>&nbsp;<span>
+          <span className="f_min">01Dif:</span> {item.limitDiff01}</span>&nbsp;B:{item.bolin05}_{item.bolin15}
+          {item.trend > 2 || item.trend < -2 && ( <span>&gt;&gt;</span> )}
           </p>
           <div className="timeGage">
           <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
@@ -368,7 +384,7 @@ const didRun = useRef(false);
             )
           }
           </div>
-          <button className="dayListButton" onClick={() => runPickup(item[0], dateStr)}>本日推移</button>
+          <button className="dayListButton" onClick={() => runPickup(item.pair, dateStr)}>本日推移</button>
           </div>
 
           </div>
