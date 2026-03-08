@@ -24,106 +24,100 @@ type TrendData = {
 };
 
 export default function App() {
-  const rootRef = useRef(null);
+  const rootRef = useRef<HTMLDivElement>(null);
 
-  //APIパス自動切換
   const currentUrl = window.location.href;
-  const defaultApiPath = (currentUrl.indexOf("trend-pickupper9.sakura.ne.jp") > -1) ? "./api/pickup_json_sa_v1.php" : "./api/pickup_json_v1.php";
+  const defaultApiPath =
+    currentUrl.indexOf("trend-pickupper9.sakura.ne.jp") > -1
+      ? "./api/pickup_json_sa_v1.php"
+      : "./api/pickup_json_v1.php";
 
-  const runPickup = (pair, day) => {
-
-    //console.log(dateStr);
+  const runPickup = (pair: string, day: string) => {
     const root = rootRef.current;
-    root.querySelector("#pair").value = pair;
-    root.querySelector("#pickupDay").value = day;
-    root.querySelector("#dayPickupBtn").click();
-  }
+    if (!root) return;
 
-  const [data, setData] = useState(null);
-  const [error, setError] = useState(null);
-  //再生判定変数
-  const [muteFlag, setMute] = useState(0);
-  //再生クローク判定
-  const [cloak, setCloak] = useState(true);
-  //音声 完全停止
-  const [keepSound, setKeepSound] = useState(true);
+    const pairEl = root.querySelector("#pair") as HTMLSelectElement | null;
+    const pickupDayEl = root.querySelector("#pickupDay") as HTMLInputElement | null;
+    const dayPickupBtn = root.querySelector("#dayPickupBtn") as HTMLButtonElement | null;
 
-  const [dateStr, setDateStr] = useState("");
+    if (pairEl) pairEl.value = pair;
+    if (pickupDayEl) pickupDayEl.value = day;
+    dayPickupBtn?.click();
+  };
 
-  const prevSig = useRef([]);
+  const [data, setData] = useState<TrendData | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const [startSignalList, setStartSignalList] = useState([
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-  ]);
+  //const [muteFlag, setMute] = useState<number>(0);
+  const [cloak, setCloak] = useState<boolean>(true);
+  const [keepSound, setKeepSound] = useState<boolean>(true);
+  const [dateStr, setDateStr] = useState<string>("");
+  const [colorTime, setColorTime] = useState<boolean>(false);
 
-  const [muteList, setMuteList] = useState([
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-  ]);
+  const prevSig = useRef<number[]>([]);
+  const didRun = useRef<boolean>(false);
 
-  const [signalFlag, setSignalList] = useState([
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-  ]);
+  const [startSignalList, setStartSignalList] = useState<number[]>(
+    Array(14).fill(0)
+  );
 
-  //シグナルゲージ用配列
-  const [previousSignals, setPreviousSignals] = useState([
-    [], [], [], [], [], [], [], [], [], [], [], [], [], []
-  ]);
-  //過去ボリン角度用配列
-  const [previousSignalsDeg, setPreviousSignalsDeg] = useState([
-    [], [], [], [], [], [], [], [], [], [], [], [], [], []
-  ]);
+  const [muteList, setMuteList] = useState<number[]>(
+    Array(14).fill(0)
+  );
+/*
+  const [signalFlag, setSignalList] = useState<number[]>(
+    Array(14).fill(0)
+  );
+*/
+  const [previousSignals, setPreviousSignals] = useState<string[][]>(
+    Array.from({ length: 14 }, () => [])
+  );
 
-  const [colorTime, setColorTime] = useState(false);
+  const [previousSignalsDeg, setPreviousSignalsDeg] = useState<string[][]>(
+    Array.from({ length: 14 }, () => [])
+  );
 
-  const denenRef = useRef(null);
+  const denenRef = useRef<HTMLAudioElement | null>(null);
+  const signalRef = useRef<HTMLAudioElement | null>(null);
+
   const denenPlay = () => {
+    if (!denenRef.current) return;
     denenRef.current.volume = 0;
-    denenRef.current.play();
+    void denenRef.current.play();
     setCloak(false);
   };
 
-
-
-  const signalRef = useRef(null);
   const signalPlay = () => {
+    if (!signalRef.current) return;
     signalRef.current.volume = 1;
-    signalRef.current.play();
+    void signalRef.current.play();
   };
 
-//  const stopRef = useRef(null);
   const soundStop = () => {
-    if (keepSound) {
-      setKeepSound(false);
-    } else {
-      setKeepSound(true);
-    }
+    setKeepSound((prev) => !prev);
   };
-
-  //const islandRef = useRef(null);
-
 
   useEffect(() => {
     async function fetchData() {
       fetch(defaultApiPath)
-      .then(async (res) => {
-        const text = await res.text();
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
-
-        return JSON.parse(text);
-      })
-      .then(setData)
-      .catch((e) => setError(String(e)));
-//ここでもできる
+        .then(async (res) => {
+          const text = await res.text();
+          if (!res.ok) {
+            throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
+          }
+          return JSON.parse(text) as TrendData;
+        })
+        .then(setData)
+        .catch((e: unknown) => setError(String(e)));
     }
 
-    fetchData(); // 初回実行
+    fetchData();
 
     const interval = setInterval(() => {
       fetchData();
+    }, 15000);
 
-    }, 15000); // 15000ms = 15秒
-
-    return () => clearInterval(interval); // ← 超重要（クリーンアップ）
+    return () => clearInterval(interval);
   }, [defaultApiPath]);
 
   const items: CurrencyItem[] = useMemo(() => {
@@ -145,48 +139,41 @@ export default function App() {
     );
   }, [data]);
 
-  // 配列を取り出す（APIの形が違っても対応）
-  /*
-  const items =
-  Array.isArray(data) ? data :
-  Array.isArray(data?.data) ? data.data :
-  Array.isArray(data?.currency) ? data.currency :
-  [];
-*/
-
-
-///////////////////////////////////////////////////////////
-
-let nowSignal = false;
-let timeAll;
-let timeMin;
-let timeMinInt
-const didRun = useRef(false);
-
   useEffect(() => {
     prevSig.current = [...startSignalList];
 
-    data?.currency?.forEach((inValue, inCount) => {
-      previousSignals[inCount].push(inValue[1]);
+    if (items.length === 0) return;
 
-      if (previousSignals[inCount].length > 240) {
-        previousSignals[inCount].shift();
-      }
+    setPreviousSignals((prev) =>
+      prev.map((list, index) => {
+        const next = [...list, String(items[index]?.trend ?? 0)];
+        if (next.length > 240) next.shift();
+        return next;
+      })
+    );
 
-      previousSignalsDeg[inCount].push(inValue[9]);
-      if (previousSignalsDeg[inCount].length > 10) {
-        previousSignalsDeg[inCount].shift();
-      }
-      startSignalList[inCount] = parseInt(inValue[1]);
+    setPreviousSignalsDeg((prev) =>
+      prev.map((list, index) => {
+        const next = [...list, String(items[index]?.bolin15 ?? 0)];
+        if (next.length > 10) next.shift();
+        return next;
+      })
+    );
 
-    });
+    setStartSignalList(items.map((item) => item.trend));
 
-    nowSignal = false;
+    let nowSignal = false;
 
-    prevSig.current.forEach((inValue, inCount) => {
-      if (startSignalList[inCount] == 3 || startSignalList[inCount] == -3 || startSignalList[inCount] == -4) { //3，-3に加えて、-4逆張りも追加
-        if (prevSig.current[inCount] < 3 || prevSig.current[inCount] > -3) {
-          if (startSignalList[inCount] != prevSig.current[inCount]) {
+    prevSig.current.forEach((prevValue, index) => {
+      const currentValue = items[index]?.trend ?? 0;
+
+      if (
+        currentValue === 3 ||
+        currentValue === -3 ||
+        currentValue === -4
+      ) {
+        if (prevValue < 3 || prevValue > -3) {
+          if (currentValue !== prevValue) {
             nowSignal = true;
           }
         }
@@ -198,213 +185,268 @@ const didRun = useRef(false);
     }
 
     if (data) {
-      timeAll = new Date(data.pickup_world);
-      timeMin = timeAll.getMinutes();
-      timeMinInt = parseInt(timeMin);
+      const timeAll = new Date(data.pickup_world);
+      const timeMin = timeAll.getMinutes();
 
-      if (timeMinInt >= 50 && timeMinInt <= 59) {
-        setColorTime(true);
-      } else if (timeMinInt >= 0 && timeMinInt <= 5) {
+      if ((timeMin >= 50 && timeMin <= 59) || (timeMin >= 0 && timeMin <= 5)) {
         setColorTime(true);
       } else {
         setColorTime(false);
       }
 
-      //いっかいだけ処理
-      if (didRun.current) return;
+      if (!didRun.current) {
         didRun.current = true;
-        let dateTxt = timeAll.getFullYear() + "/" + (timeAll.getMonth()+1).toString().padStart(2, "0") + "/" + (timeAll.getDay()+1).toString().padStart(2, "0");
+
+        const dateTxt =
+          timeAll.getFullYear() +
+          "/" +
+          String(timeAll.getMonth() + 1).padStart(2, "0") +
+          "/" +
+          String(timeAll.getDate()).padStart(2, "0");
+
         setDateStr(dateTxt);
-        root.querySelector("#pickupDay").value = dateTxt;
-        root.querySelector("#baseTime").value = dateTxt + " 23:59:59";
 
+        const root = rootRef.current;
+        if (root) {
+          const pickupDayEl = root.querySelector("#pickupDay") as HTMLInputElement | null;
+          const baseTimeEl = root.querySelector("#baseTime") as HTMLInputElement | null;
+
+          if (pickupDayEl) pickupDayEl.value = dateTxt;
+          if (baseTimeEl) baseTimeEl.value = `${dateTxt} 23:59:59`;
+        }
+      }
     }
-
-  }, [data]);
-
+  }, [data, items, keepSound]);
 
   useEffect(() => {
     const decCount = () => {
-      setMuteList(prev => prev.map(ms => (ms > 15000 ? ms - 15000 : 0)));
-    }
+      setMuteList((prev) =>
+        prev.map((ms) => (ms > 15000 ? ms - 15000 : 0))
+      );
+    };
 
-    const soundFlagSwitch = () => {
-      let soundMode = 0; //初期化
-      setMute(0);
+    const soundFlagSwitch = (): number => {
+      let soundMode = 0;
+      //setMute(0);
 
-      data?.currency?.forEach((inValue, inCount) => {
-        if (parseInt(muteList[inCount]) <= 0 && (parseInt(inValue[1]) >= 3 || parseInt(inValue[1]) <= -3) && keepSound) {
-          soundMode = 1;//田園再生
-          setMute(1);
+      items.forEach((item, index) => {
+        if (
+          muteList[index] <= 0 &&
+          (item.trend >= 3 || item.trend <= -3) &&
+          keepSound
+        ) {
+          soundMode = 1;
+          //setMute(1);
         }
-
       });
 
-
       return soundMode;
-    }
+    };
 
-
-    //最終的な駆動 （１：15秒 音量操作 ２：データ更新）
     const soundId = setInterval(() => {
+      const soundFlag = soundFlagSwitch();
+      decCount();
 
-      let soundFlag = soundFlagSwitch(); //田園 音量フラグ
-      decCount(); //ミュートカウンター 減算
-      denenRef.current.volume = (soundFlag == 1) ? 1 : 0; //音量追加
-      setMute(soundFlag);
+      if (denenRef.current) {
+        denenRef.current.volume = soundFlag === 1 ? 1 : 0;
+      }
 
+      //setMute(soundFlag);
     }, 15000);
 
-    decCount();//初回実行
-    denenRef.current.volume = (soundFlagSwitch() == 1) ? 1 : 0; //初回実行
+    decCount();
+
+    if (denenRef.current) {
+      denenRef.current.volume = soundFlagSwitch() === 1 ? 1 : 0;
+    }
 
     return () => clearInterval(soundId);
-  }, [data]);
-
-/////////////////////////////////////////////////
-
-
+  }, [data, items, keepSound]);
 
   return (
     <div style={{ padding: 0 }}>
+      <h1 className="mainTitle">トレンド監視ツール</h1>
 
-    <h1 className="mainTitle">トレンド監視ツール</h1>
-
-    <div>
-      <audio ref={denenRef} src="sound/Beethoven-Symphony-No6-1st-2020-AR-VR.mp3" loop />
-      <audio ref={signalRef} src="sound/signal.wav" />
-      <button className="muteButton" onClick={soundStop}>{keepSound ? "完全にミュートする":"ミュートを解除する"}</button><span className="muteStatus">{keepSound ? "再生中":"ミュート中"}</span>
-    </div>
-
-    <div className="mute_disable" style={{display: cloak ? "block" : "none"}}><div className="md_inner"><p>ミュートを解除します</p><button id="muteDisable" onClick={denenPlay}>解除</button></div></div>
-
-    {data ? (
-      <p className="serverTime">W: {data.pickup_world}</p>
-    ) : (
-      <p className="serverTime">W:読み込み中...</p>
-    )}
-
-
-
-<div className="toolsFlex">
-    <div className="trend-list" style={{ borderLeft: colorTime ? "8px solid rgb(255, 60, 60)" : "8px solid rgb(136, 136, 136)" }}>
-
-    {
       <div>
-      {items.map((item, i) => {
-        const aoStatusBase = item.aoStatus ?? "";
-        let aoStatus = aoStatusBase.replaceAll('1', '＋');
-        aoStatus = aoStatus.replaceAll('0', '－');
-        aoStatus = aoStatus.replaceAll('p', '▲');
-        aoStatus = aoStatus.replaceAll('m', '▽');
-
-        let directionColor = "";
-        if (parseInt(item.trend) >= 1) {
-          directionColor = "#F00";
-        } else if (item.trend <= -1) {
-           directionColor = "#00F";
-        } else {
-           directionColor = "#AAA";
-        }
-
-        return (
-          <div key={i} className="currencyBlock">
-          <div className="checkItem">
-
-
-          <div className="signalAnim current">
-          {(item.trend > 2 || item.trend < -2) && (<div></div>)}
-          </div>
-
-          <button className="mute 0" aria-label="ミュート時間60分追加"
-          onClick={() =>
-            setMuteList(prev =>
-              prev.map((n, index) =>
-                index === i ? n + 3600000 : n
-              )
-            )
-          }
-          >60</button>
-          <button className="muteB 0" aria-label="ミュート時間5分追加"
-          onClick={() =>
-            setMuteList(prev =>
-              prev.map((n, index) =>
-                index === i ? n + 300000 : n
-              )
-            )
-          }
-          >5</button>
-          <button className="restart 0" aria-label="ミュート時間リセット"
-          onClick={() =>
-            setMuteList(prev =>
-              prev.map((n, index) =>
-                index === i ? 0 : n
-              )
-            )
-          }
-          >RS</button>
-
-          <div className="time time0">
-            {Math.floor((muteList[i] ?? 0) / 60000)}
-          </div>
-          </div>
-
-          <div>
-          <p className="statusBox" style={{ whiteSpace: "nowrap", color: directionColor, backgroundColor: (muteList[i] <= 0) ? "#FFF" : "#DDD", fontWeight: item.trend > 1 || item.trend < -1 ? "bold" : "normal" }}>
-          {item.trend > 2 || item.trend < -2 &&  <span>&lt;&lt;</span> } {item.trend < -3 &&  <span>↑</span> }
-          {item.pair} {aoStatus}
-          <span className="f_min">&nbsp;&nbsp;3Deg: </span>
-          <span>{item.aveDiff}</span>&nbsp;&nbsp;<span>
-          <span className="f_min">05Dif:</span> {item.limitDiff05}</span>&nbsp;<span>
-          <span className="f_min">01Dif:</span> {item.limitDiff01}</span>&nbsp;B:{item.bolin05}_{item.bolin15}
-          {item.trend > 2 || item.trend < -2 && ( <span>&gt;&gt;</span> )}
-          </p>
-          <div className="timeGage">
-          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-          </div>
-          <div className="sigNow">
-          {
-            previousSignals[i].map((value, index) =>
-              value === "3" ? (
-                <b key={index}></b>
-              ) : value === "-3" ? (
-                <p key={index}></p>
-              ) : (
-                <i key={index}></i>
-              )
-            )
-          }
-          </div>
-          <div className="zoomDirection">
-          {
-            previousSignalsDeg[i].map((value, index) =>
-              (
-                <p key={index}>{value}</p>
-              )
-            )
-          }
-          </div>
-          <button className="dayListButton" onClick={() => runPickup(item.pair, dateStr)}>本日推移</button>
-          </div>
-
-          </div>
-        );
-      })}
+        <audio
+          ref={denenRef}
+          src="sound/Beethoven-Symphony-No6-1st-2020-AR-VR.mp3"
+          loop
+        />
+        <audio ref={signalRef} src="sound/signal.wav" />
+        <button className="muteButton" onClick={soundStop}>
+          {keepSound ? "完全にミュートする" : "ミュートを解除する"}
+        </button>
+        <span className="muteStatus">
+          {keepSound ? "再生中" : "ミュート中"}
+        </span>
       </div>
-    }
 
+      <div className="mute_disable" style={{ display: cloak ? "block" : "none" }}>
+        <div className="md_inner">
+          <p>ミュートを解除します</p>
+          <button id="muteDisable" onClick={denenPlay}>
+            解除
+          </button>
+        </div>
+      </div>
+
+      {data ? (
+        <p className="serverTime">W: {data.pickup_world}</p>
+      ) : (
+        <p className="serverTime">W:読み込み中...</p>
+      )}
+
+      {error && <p style={{ whiteSpace: "pre-wrap" }}>{error}</p>}
+
+      <div className="toolsFlex">
+        <div
+          className="trend-list"
+          style={{
+            borderLeft: colorTime
+              ? "8px solid rgb(255, 60, 60)"
+              : "8px solid rgb(136, 136, 136)",
+          }}
+        >
+          <div>
+            {items.map((item, i) => {
+              let aoStatus = item.aoStatus.replaceAll("1", "＋");
+              aoStatus = aoStatus.replaceAll("0", "－");
+              aoStatus = aoStatus.replaceAll("p", "▲");
+              aoStatus = aoStatus.replaceAll("m", "▽");
+
+              let directionColor = "";
+              if (item.trend >= 1) {
+                directionColor = "#F00";
+              } else if (item.trend <= -1) {
+                directionColor = "#00F";
+              } else {
+                directionColor = "#AAA";
+              }
+
+              return (
+                <div key={i} className="currencyBlock">
+                  <div className="checkItem">
+                    <div className="signalAnim current">
+                      {(item.trend > 2 || item.trend < -2) && <div></div>}
+                    </div>
+
+                    <button
+                      className="mute 0"
+                      aria-label="ミュート時間60分追加"
+                      onClick={() =>
+                        setMuteList((prev) =>
+                          prev.map((n, index) =>
+                            index === i ? n + 3600000 : n
+                          )
+                        )
+                      }
+                    >
+                      60
+                    </button>
+
+                    <button
+                      className="muteB 0"
+                      aria-label="ミュート時間5分追加"
+                      onClick={() =>
+                        setMuteList((prev) =>
+                          prev.map((n, index) =>
+                            index === i ? n + 300000 : n
+                          )
+                        )
+                      }
+                    >
+                      5
+                    </button>
+
+                    <button
+                      className="restart 0"
+                      aria-label="ミュート時間リセット"
+                      onClick={() =>
+                        setMuteList((prev) =>
+                          prev.map((n, index) => (index === i ? 0 : n))
+                        )
+                      }
+                    >
+                      RS
+                    </button>
+
+                    <div className="time time0">
+                      {Math.floor((muteList[i] ?? 0) / 60000)}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p
+                      className="statusBox"
+                      style={{
+                        whiteSpace: "nowrap",
+                        color: directionColor,
+                        backgroundColor: muteList[i] <= 0 ? "#FFF" : "#DDD",
+                        fontWeight:
+                          item.trend > 1 || item.trend < -1 ? "bold" : "normal",
+                      }}
+                    >
+                      {(item.trend > 2 || item.trend < -2) && <span>&lt;&lt;</span>}
+                      {item.trend < -3 && <span>↑</span>}
+
+                      {item.pair} {aoStatus}
+
+                      <span className="f_min">&nbsp;&nbsp;3Deg: </span>
+                      <span>{item.aveDiff}</span>&nbsp;&nbsp;
+
+                      <span>
+                        <span className="f_min">05Dif:</span> {item.limitDiff01}
+                      </span>
+                      &nbsp;
+
+                      <span>
+                        <span className="f_min">01Dif:</span> {item.limitDiff05}
+                      </span>
+                      &nbsp;B:{item.bolin05}_{item.bolin15}
+
+                      {(item.trend > 2 || item.trend < -2) && <span>&gt;&gt;</span>}
+                    </p>
+
+                    <div className="timeGage">
+                      {Array.from({ length: 62 }).map((_, idx) => (
+                        <i key={idx}></i>
+                      ))}
+                    </div>
+
+                    <div className="sigNow">
+                      {previousSignals[i]?.map((value, index) =>
+                        value === "3" ? (
+                          <b key={index}></b>
+                        ) : value === "-3" ? (
+                          <p key={index}></p>
+                        ) : (
+                          <i key={index}></i>
+                        )
+                      )}
+                    </div>
+
+                    <div className="zoomDirection">
+                      {previousSignalsDeg[i]?.map((value, index) => (
+                        <p key={index}>{value}</p>
+                      ))}
+                    </div>
+
+                    <button
+                      className="dayListButton"
+                      onClick={() => runPickup(item.pair, dateStr)}
+                    >
+                      本日推移
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <TrendPickup ref={rootRef} />
+      </div>
     </div>
-{/* デバッグ用に下に生データも出す
-<hr />
-<pre style={{ whiteSpace: "pre-wrap" }}>
-{data ? JSON.stringify(data, null, 2) : "Loading..."}
-</pre>
-*/}
-
-
-    <TrendPickup ref={rootRef} />
-    </div>
-</div>
-
-);
+  );
 }
