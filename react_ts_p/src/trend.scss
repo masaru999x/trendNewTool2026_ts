@@ -179,6 +179,9 @@ div.sigNow p{
   line-height: 0;
   vertical-align: top;
   position: relative;
+  &.reverse {
+    background-color: #F60;
+  }
 }
 
 div.sigNow p.o1:before{

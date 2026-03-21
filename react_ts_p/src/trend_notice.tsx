@@ -232,7 +232,7 @@ export default function App() {
       items.forEach((item, index) => {
         if (
           muteList[index] <= 0 &&
-          (item.trend >= 3 || item.trend <= -3) &&
+          (item.trend >= 3 || item.trend <= -3) && //-4含めてプレイ
           keepSound
         ) {
           soundMode = 1;
@@ -420,6 +420,8 @@ export default function App() {
                           <b key={index}></b>
                         ) : value === "-3" ? (
                           <p key={index}></p>
+                        ) : value === "-4" ? (
+                          <p key={index} className="reverse"></p>
                         ) : (
                           <i key={index}></i>
                         )

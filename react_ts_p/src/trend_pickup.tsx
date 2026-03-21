@@ -157,8 +157,6 @@ const TrendIsland = forwardRef<HTMLDivElement, TrendPickupProps>(function JqTren
       let existFlag = false;
 
       json.data.forEach((item) => {
-        console.log("アイテム」");
-        console.log(item);
         bolinger.push(Math.round(item.sum_5min / 20));
         datetime.push(item.bucket_start);
 
